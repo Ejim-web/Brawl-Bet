@@ -1,1 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🥊 Brawl & Bet – Fighting Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
 
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #0d0f1a, #1a1e2e);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            padding: 16px;
+        }
+
+        .game-container {
+            background: #232838;
+            background-image: radial-gradient(circle at 20% 30%, #2f3a4a, #181d2b);
+            padding: 24px 28px 32px;
+            border-radius: 48px 48px 32px 32px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), inset 0 1px 4px rgba(255, 255, 255, 0.08);
+            max-width: 820px;
+            width: 100%;
+            border-bottom: 4px solid #4a5a6e;
+            transition: 0.2s;
+        }
+
+        /* ── header: coins & title ── */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4px 18px 4px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #f5e7c8;
+            text-shadow: 0 3px 0 #6b4f32, 0 6px 14px rgba(0, 0, 0, 0.5);
+            letter-spacing: 0.5px;
+        }
+        .title span {
+            display: inline-block;
+        }
+
+        .coin-pouch {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(6px);
+            padding: 8px 22px;
+            border-radius: 60px;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 22px;
+            font-weight: 700;
+            color: #f7e9b0;
+            border: 1px solid #f5c54240;
+        }
+        .coin-pouch .coin-icon {
+            font-size: 28px;
+        }
+        .coin-pouch .coin-value {
+            min-width: 56px;
+            text-align: center;
+            background: #0f121b;
+            padding: 2px 12px;
+            border-radius: 40px;
+            color: #ffdb7a;
+            font-size: 26px;
+            box-shadow: inset 0 2px 4px #00000060;
+        }
+
+        /* ── main layout ── */
+        .battle-area {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* fighter selection row */
+        .fighter-select {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            padding: 8px 0 4px;
+        }
+        .fighter-card {
+            background: #1e2636;
+            padding: 8px 16px 12px;
+            border-radius: 28px;
+            cursor: pointer;
+            border: 2px solid #3c4a60;
+            box-shadow: 0 4px 0 #0e121c;
+            transition: all 0.1s ease;
+            text-align: center;
+            min-width: 90px;
+            color: #c8d0e0;
+        }
+        .fighter-card.selected {
+            border-color: #f5c542;
+            box-shadow: 0 0 20px #f5c54260, 0 4px 0 #b58a2a;
+            background: #2a3448;
+        }
+        .fighter-card .f-icon {
+            font-size: 36px;
+            display: block;
+        }
+        .fighter-card .f-name {
+            font-weight: 700;
+            font-size: 14px;
+            margin-top: 2px;
+        }
+        .fighter-card .f-stats {
+            font-size: 11px;
+            opacity: 0.7;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 2px;
+        }
+
+        /* betting row */
+        .bet-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            background: #141b26;
+            padding: 10px 18px;
+            border-radius: 60px;
+            box-shadow: inset 0 2px 8px #00000080;
+        }
+        .bet-row label {
+            color: #bcc8dd;
+            font-weight: 600;
+            font-size: 18px;
+        }
+        .bet-row input[type="range"] {
+            width: 160px;
+            accent-color: #f5c542;
+            background: #2d364a;
+            height: 6px;
+            border-radius: 10px;
+        }
+        .bet-row .bet-amount {
+            background: #0f121b;
+            padding: 4px 18px;
+            border-radius: 40px;
+            font-size: 24px;
+            font-weight: 800;
+            color: #ffdb7a;
+            min-width: 60px;
+            text-align: center;
+        }
+        .bet-row .bet-max {
+            color: #8f9bb0;
+            font-size: 14px;
+            cursor: pointer;
+            border: 1px solid #3d4a60;
+            padding: 2px 12px;
+            border-radius: 30px;
+            transition: 0.1s;
+        }
+        .bet-row .bet-max:hover {
+            background: #2d364a;
+        }
+
+        /* ── canvas: health bars & battle scene ── */
+        .canvas-wrapper {
+            background: #0b0f17;
+            border-radius: 32px;
+            padding: 8px;
+            box-shadow: inset 0 4px 20px #000000, 0 8px 20px #00000060;
+            border: 1px solid #3a465e;
+        }
+        #battleCanvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 16 / 7;
+            background: #141c2a;
+            border-radius: 24px;
+            cursor: default;
+            touch-action: none;
+        }
+
+        /* ── action buttons ── */
+        .action-row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 6px 0 4px;
+        }
+        .action-btn {
+            background: #2a3448;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 60px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #dde4f0;
+            box-shadow: 0 5px 0 #0e121c, 0 6px 12px #00000040;
+            cursor: pointer;
+            transition: all 0.06s ease;
+            min-width: 80px;
+            border: 1px solid #4a5a72;
+            flex: 1 0 auto;
+            max-width: 130px;
+        }
+        .action-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #0e121c;
+        }
+        .action-btn:disabled {
+            opacity: 0.4;
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #0e121c;
+            pointer-events: none;
+        }
+        .action-btn.special {
+            background: #7a4a2a;
+            border-color: #c58a3a;
+            color: #ffe6b0;
+        }
+        .action-btn.special:disabled {
+            opacity: 0.3;
+        }
+
+        /* ── log / messages ── */
+        .log-area {
+            background: #0b0f17cc;
+            backdrop-filter: blur(4px);
+            padding: 8px 16px;
+            border-radius: 40px;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            color: #b8c8e0;
+            font-size: 16px;
+            font-weight: 500;
+            border: 1px solid #3a4660;
+            box-shadow: inset 0 2px 8px #00000060;
+            margin-top: 4px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .log-area .log-text {
+            flex: 1;
+            text-align: center;
+            font-size: 17px;
+            letter-spacing: 0.3px;
+        }
+        .log-area .log-emoji {
+            font-size: 28px;
+        }
+
+        /* ── reset / new game ── */
+        .footer-actions {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            padding-top: 12px;
+        }
+        .footer-btn {
+            background: #2a3448;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 60px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #dde4f0;
+            box-shadow: 0 5px 0 #0e121c;
+            cursor: pointer;
+            transition: 0.06s ease;
+            border: 1px solid #4a5a72;
+        }
+        .footer-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #0e121c;
+        }
+        .footer-btn.gold {
+            background: #b58a2a;
+            border-color: #f5c542;
+            color: #1a1508;
+        }
+
+        /* ── responsive ── */
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 16px 14px 20px;
+                border-radius: 32px;
+            }
+            .title {
+                font-size: 22px;
+            }
+            .coin-pouch {
+                font-size: 18px;
+                padding: 4px 14px;
+            }
+            .fighter-card {
+                min-width: 70px;
+                padding: 6px 10px;
+            }
+            .fighter-card .f-icon {
+                font-size: 28px;
+            }
+            .action-btn {
+                font-size: 16px;
+                padding: 10px 12px;
+                min-width: 60px;
+                max-width: 100px;
+            }
+            .bet-row input[type="range"] {
+                width: 100px;
+            }
+            .log-area .log-text {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .action-row {
+                gap: 6px;
+            }
+            .action-btn {
+                font-size: 14px;
+                padding: 8px 8px;
+                min-width: 50px;
+            }
+            .fighter-select {
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <!-- header -->
+        <div class="header">
+            <div class="title">🥊 BRAWL & BET</div>
+            <div class="coin-pouch">
+                <span class="coin-icon">🪙</span>
+                <span class="coin-value" id="coinDisplay">100</span>
+            </div>
+        </div>
+
+        <div class="battle-area">
+            <!-- fighter selection -->
+            <div class="fighter-select" id="fighterSelect"></div>
+
+            <!-- betting -->
+            <div class="bet-row">
+                <label>💰 Bet</label>
+                <input type="range" id="betSlider" min="1" max="50" value="10" />
+                <span class="bet-amount" id="betAmount">10</span>
+                <span class="bet-max" id="betMaxBtn">MAX</span>
+            </div>
+
+            <!-- canvas -->
+            <div class="canvas-wrapper">
+                <canvas id="battleCanvas" width="800" height="350"></canvas>
+            </div>
+
+            <!-- action buttons -->
+            <div class="action-row" id="actionRow">
+                <button class="action-btn" data-action="punch">👊 Punch</button>
+                <button class="action-btn" data-action="kick">🦵 Kick</button>
+                <button class="action-btn" data-action="block">🛡️ Block</button>
+                <button class="action-btn special" data-action="special">⭐ Special</button>
+            </div>
+
+            <!-- log -->
+            <div class="log-area" id="logArea">
+                <span class="log-emoji">⚔️</span>
+                <span class="log-text" id="logText">Select your fighter & press Punch!</span>
+            </div>
+
+            <!-- footer -->
+            <div class="footer-actions">
+                <button class="footer-btn" id="resetFightBtn">🔄 New Fight</button>
+                <button class="footer-btn gold" id="resetGameBtn">🔄 Full Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ─── FIGHTERS ────────────────────────────────────────────────
+            const FIGHTERS = [{
+                id: 'brutus',
+                name: 'Brutus',
+                icon: '🐻',
+                health: 100,
+                attack: 12,
+                defense: 6,
+                speed: 4,
+                specialDmg: 22,
+                color: '#c97a4a',
+                desc: 'High dmg'
+            }, {
+                id: 'shadow',
+                name: 'Shadow',
+                icon: '🐺',
+                health: 80,
+                attack: 8,
+                defense: 4,
+                speed: 8,
+                specialDmg: 18,
+                color: '#7a8aa0',
+                desc: 'Fast & dodgy'
+            }, {
+                id: 'tank',
+                name: 'Tank',
+                icon: '🦏',
+                health: 130,
+                attack: 7,
+                defense: 10,
+                speed: 3,
+                specialDmg: 16,
+                color: '#5a7a6a',
+                desc: 'Tough & sturdy'
+            }];
+
+            // ─── STATE ──────────────────────────────────────────────────
+            let coins = 100;
+            let selectedFighter = 0; // index into FIGHTERS
+            let betAmount = 10;
+
+            // battle state
+            let playerHealth = 100;
+            let aiHealth = 100;
+            let playerMaxHealth = 100;
+            let aiMaxHealth = 100;
+            let playerSpecialCharge = 2; // max 2, regen 1 per turn
+            let aiSpecialCharge = 2;
+            let battleActive = false; // true when a fight is ongoing (can't change fighter/bet)
+            let turnLock = false; // prevent double-click during animation
+            let gameOver = false; // true when fight ends
+
+            // AI state
+            let aiLastAction = 'punch';
+
+            // DOM refs
+            const canvas = document.getElementById('battleCanvas');
+            const ctx = canvas.getContext('2d');
+            const coinDisplay = document.getElementById('coinDisplay');
+            const betSlider = document.getElementById('betSlider');
+            const betAmountSpan = document.getElementById('betAmount');
+            const betMaxBtn = document.getElementById('betMaxBtn');
+            const logText = document.getElementById('logText');
+            const logEmoji = document.querySelector('.log-emoji');
+            const fighterSelect = document.getElementById('fighterSelect');
+            const actionBtns = document.querySelectorAll('.action-btn');
+            const resetFightBtn = document.getElementById('resetFightBtn');
+            const resetGameBtn = document.getElementById('resetGameBtn');
+
+            // ─── HELPERS ──────────────────────────────────────────────────
+            function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
+
+            function updateCoinUI() {
+                coinDisplay.textContent = coins;
+                // update slider max based on coins
+                const maxBet = Math.min(coins, 50);
+                betSlider.max = maxBet;
+                if (parseInt(betSlider.value) > maxBet) {
+                    betSlider.value = maxBet;
+                    betAmount = maxBet;
+                    betAmountSpan.textContent = maxBet;
+                }
+            }
+
+            function getFighter(index) { return FIGHTERS[index]; }
+
+            // ─── UI: fighter cards ──────────────────────────────────────
+            function renderFighterCards() {
+                fighterSelect.innerHTML = '';
+                FIGHTERS.forEach((f, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'fighter-card' + (idx === selectedFighter ? ' selected' : '');
+                    card.innerHTML = `
+                        <span class="f-icon">${f.icon}</span>
+                        <div class="f-name">${f.name}</div>
+                        <div class="f-stats">
+                            <span>❤️${f.health}</span>
+                            <span>⚔️${f.attack}</span>
+                            <span>🛡️${f.defense}</span>
+                        </div>
+                    `;
+                    card.dataset.idx = idx;
+                    card.addEventListener('click', () => {
+                        if (battleActive) {
+                            setLog('❌ Cannot change fighter during a fight!', '⚔️');
+                            return;
+                        }
+                        selectedFighter = idx;
+                        renderFighterCards();
+                        resetFight(); // reset health to new fighter's stats
+                    });
+                    fighterSelect.appendChild(card);
+                });
+            }
+
+            // ─── LOG ──────────────────────────────────────────────────────
+            function setLog(text, emoji = '💬') {
+                logText.textContent = text;
+                logEmoji.textContent = emoji;
+            }
+
+            // ─── CANVAS DRAW ─────────────────────────────────────────────
+            function drawBattle() {
+                const w = canvas.width,
+                    h = canvas.height;
+                ctx.clearRect(0, 0, w, h);
+
+                // background
+                const grad = ctx.createLinearGradient(0, 0, 0, h);
+                grad.addColorStop(0, '#1a2332');
+                grad.addColorStop(1, '#0b101a');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, w, h);
+
+                // arena floor
+                ctx.fillStyle = '#2a3440';
+                ctx.fillRect(0, h - 40, w, 40);
+                ctx.fillStyle = '#3d4a5a';
+                for (let i = 0; i < 20; i++) {
+                    ctx.fillRect(i * 45 + 10, h - 30, 20, 6);
+                }
+
+                // fighters: player (left), AI (right)
+                const pFighter = getFighter(selectedFighter);
+                const pColor = pFighter.color;
+                const aiColor = '#8a6a5a';
+
+                // health bars background
+                const barX = 60,
+                    barY = 40,
+                    barW = 200,
+                    barH = 22;
+                // player health
+                ctx.fillStyle = '#1a1a2e';
+                ctx.shadowColor = '#00000080';
+                ctx.shadowBlur = 12;
+                ctx.fillRect(barX, barY, barW, barH);
+                ctx.shadowBlur = 0;
+                const pPct = clamp(playerHealth / playerMaxHealth, 0, 1);
+                ctx.fillStyle = pPct > 0.3 ? '#4fc48a' : '#d94a4a';
+                ctx.fillRect(barX + 2, barY + 2, (barW - 4) * pPct, barH - 4);
+                ctx.strokeStyle = '#6a7a8a';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(barX, barY, barW, barH);
+                ctx.fillStyle = '#d0d8e8';
+                ctx.font = 'bold 16px "Segoe UI", sans-serif';
+                ctx.fillText(`${pFighter.icon} ${pFighter.name}`, barX, barY - 8);
+
+                // AI health
+                const aiBarX = w - 60 - barW;
+                ctx.fillStyle = '#1a1a2e';
+                ctx.shadowBlur = 12;
+                ctx.fillRect(aiBarX, barY, barW, barH);
+                ctx.shadowBlur = 0;
+                const aiPct = clamp(aiHealth / aiMaxHealth, 0, 1);
+                ctx.fillStyle = aiPct > 0.3 ? '#4fc48a' : '#d94a4a';
+                ctx.fillRect(aiBarX + 2, barY + 2, (barW - 4) * aiPct, barH - 4);
+                ctx.strokeStyle = '#6a7a8a';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(aiBarX, barY, barW, barH);
+                ctx.fillStyle = '#d0d8e8';
+                ctx.textAlign = 'right';
+                ctx.fillText(`🤖 AI (${aiLastAction})`, aiBarX + barW, barY - 8);
+                ctx.textAlign = 'left';
+
+                // special charge indicators
+                ctx.fillStyle = '#f5c542';
+                ctx.font = '18px sans-serif';
+                ctx.fillText('⭐'.repeat(Math.min(playerSpecialCharge, 2)), barX, barY + barH + 28);
+                ctx.textAlign = 'right';
+                ctx.fillText('⭐'.repeat(Math.min(aiSpecialCharge, 2)), aiBarX + barW, barY + barH + 28);
+                ctx.textAlign = 'left';
+
+                // vs text
+                ctx.fillStyle = '#e8d8b0';
+                ctx.font = 'bold 32px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('⚡VS⚡', w / 2, barY + 40);
+                ctx.textAlign = 'left';
+
+                // fighters portraits (simple)
+                ctx.font = '72px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(pFighter.icon, 150, h - 50);
+                ctx.fillText('🤖', w - 150, h - 50);
+                ctx.textAlign = 'left';
+
+                // bet display
+                ctx.fillStyle = '#ffe6a0';
+                ctx.font = '20px sans-serif';
+                ctx.fillText(`Bet: 🪙${betAmount}`, 20, h - 12);
+                ctx.fillStyle = '#b0c0d0';
+                ctx.fillText(`Coins: 🪙${coins}`, w - 140, h - 12);
+
+                // game over overlay
+                if (gameOver) {
+                    ctx.fillStyle = '#00000090';
+                    ctx.fillRect(0, 0, w, h);
+                    ctx.fillStyle = '#f5e7c8';
+                    ctx.font = 'bold 48px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(playerHealth <= 0 ? '💀 YOU LOSE' : '🏆 YOU WIN!', w / 2, h / 2 - 10);
+                    ctx.font = '24px sans-serif';
+                    ctx.fillText('Click "New Fight" to continue', w / 2, h / 2 + 50);
+                    ctx.textAlign = 'left';
+                }
+            }
+
+            // ─── RESET FIGHT (keep coins, reset health) ────────────────
+            function resetFight() {
+                const f = getFighter(selectedFighter);
+                playerMaxHealth = f.health;
+                aiMaxHealth = 100;
+                playerHealth = playerMaxHealth;
+                aiHealth = aiMaxHealth;
+                playerSpecialCharge = 2;
+                aiSpecialCharge = 2;
+                battleActive = false;
+                gameOver = false;
+                turnLock = false;
+                aiLastAction = 'punch';
+                setLog('New fight! Choose your action.', '⚔️');
+                enableActions(true);
+                drawBattle();
+            }
+
+            // ─── ENABLE/DISABLE ACTIONS ──────────────────────────────────
+            function enableActions(enabled) {
+                actionBtns.forEach(btn => {
+                    btn.disabled = !enabled || gameOver || turnLock;
+                });
+            }
+
+            // ─── START FIGHT (called on first action) ──────────────────
+            function startFight() {
+                if (battleActive) return;
+                if (coins < betAmount) {
+                    setLog('❌ Not enough coins to bet!', '😅');
+                    return;
+                }
+                battleActive = true;
+                gameOver = false;
+                enableActions(true);
+                setLog('Fight! ⚡', '🥊');
+                drawBattle();
+            }
+
+            // ─── PLAYER ACTION ───────────────────────────────────────────
+            function playerAction(action) {
+                if (!battleActive || gameOver || turnLock) return;
+                if (playerHealth <= 0 || aiHealth <= 0) {
+                    endFight();
+                    return;
+                }
+
+                // special check
+                if (action === 'special' && playerSpecialCharge < 1) {
+                    setLog('Not enough special charge! (max 2)', '⚠️');
+                    return;
+                }
+
+                turnLock = true;
+                enableActions(false);
+
+                const pFighter = getFighter(selectedFighter);
+
+                // consume special
+                if (action === 'special') {
+                    playerSpecialCharge--;
+                }
+
+                // AI decision (weighted)
+                const aiAction = decideAIAction();
+
+                // resolve turn
+                const result = resolveTurn(action, aiAction, pFighter);
+
+                // apply damage
+                playerHealth = clamp(playerHealth - result.playerDamage, 0, playerMaxHealth);
+                aiHealth = clamp(aiHealth - result.aiDamage, 0, aiMaxHealth);
+
+                // regen special (1 per turn, max 2)
+                playerSpecialCharge = Math.min(playerSpecialCharge + 1, 2);
+                aiSpecialCharge = Math.min(aiSpecialCharge + 1, 2);
+
+                aiLastAction = aiAction;
+
+                // log
+                let logMsg = `${result.playerLog}`;
+                let emoji = '💥';
+                if (result.playerDamage > 0 && result.aiDamage > 0) emoji = '⚡';
+                else if (result.playerDamage > 0) emoji = '👊';
+                else if (result.aiDamage > 0) emoji = '🛡️';
+                setLog(logMsg, emoji);
+
+                drawBattle();
+
+                // check win/lose
+                if (playerHealth <= 0 || aiHealth <= 0) {
+                    endFight();
+                    turnLock = false;
+                    enableActions(false);
+                    return;
+                }
+
+                // unlock after short delay
+                setTimeout(() => {
+                    turnLock = false;
+                    if (!gameOver && battleActive) {
+                        enableActions(true);
+                    }
+                }, 400);
+            }
+
+            // ─── AI DECISION ─────────────────────────────────────────────
+            function decideAIAction() {
+                const r = Math.random();
+                // weighted: punch 35%, kick 25%, block 20%, special 20% (if charge > 0)
+                let weights = [0.35, 0.25, 0.20];
+                let actions = ['punch', 'kick', 'block'];
+                if (aiSpecialCharge >= 1) {
+                    weights.push(0.20);
+                    actions.push('special');
+                } else {
+                    // redistribute
+                    weights[0] += 0.08;
+                    weights[1] += 0.06;
+                    weights[2] += 0.06;
+                }
+                // normalize
+                let cum = 0;
+                const r2 = Math.random();
+                for (let i = 0; i < actions.length; i++) {
+                    cum += weights[i];
+                    if (r2 < cum) return actions[i];
+                }
+                return 'punch';
+            }
+
+            // ─── RESOLVE TURN ────────────────────────────────────────────
+            function resolveTurn(playerAction, aiAction, pFighter) {
+                // base damage
+                const pAtk = pFighter.attack;
+                const pDef = pFighter.defense;
+                const pSpd = pFighter.speed;
+                const pSpecial = pFighter.specialDmg;
+
+                // AI stats (fixed)
+                const aiAtk = 10;
+                const aiDef = 6;
+                const aiSpd = 5;
+                const aiSpecial = 18;
+
+                let pDmg = 0,
+                    aiDmg = 0;
+                let pLog = '',
+                    aiLog = '';
+
+                // player action effects
+                const pBlock = (playerAction === 'block');
+                const pSpecialUsed = (playerAction === 'special');
+                const pPunch = (playerAction === 'punch');
+                const pKick = (playerAction === 'kick');
+
+                // AI action effects
+                const aBlock = (aiAction === 'block');
+                const aSpecialUsed = (aiAction === 'special');
+                const aPunch = (aiAction === 'punch');
+                const aKick = (aiAction === 'kick');
+
+                // resolve player damage to AI
+                if (pPunch) {
+                    if (aBlock) { pDmg = Math.floor(pAtk * 0.3);
+                        pLog = 'Punch blocked by AI!'; } else if (aSpecialUsed) { pDmg = Math.floor(pAtk * 1.2);
+                        pLog = 'Punch countered special!'; } else { pDmg = Math.floor(pAtk * 0.9 + 2);
+                        pLog = 'Punch hit!'; }
+                } else if (pKick) {
+                    if (aBlock) { pDmg = Math.floor(pAtk * 0.6);
+                        pLog = 'Kick partially blocked!'; } else if (aPunch) { pDmg = Math.floor(pAtk * 1.3);
+                        pLog = 'Kick beat punch!'; } else { pDmg = Math.floor(pAtk * 1.0 + 3);
+                        pLog = 'Kick landed!'; }
+                } else if (pSpecialUsed) {
+                    if (aBlock) { pDmg = Math.floor(pSpecial * 0.5);
+                        pLog = 'Special deflected!'; } else { pDmg = Math.floor(pSpecial * 0.9 + 4);
+                        pLog = '⭐ SPECIAL!'; }
+                } else if (pBlock) {
+                    pLog = 'You block.';
+                }
+
+                // resolve AI damage to player
+                if (aPunch) {
+                    if (pBlock) { aiDmg = Math.floor(aiAtk * 0.2);
+                        aiLog = 'AI punch blocked!'; } else if (pSpecialUsed) { aiDmg = Math.floor(aiAtk * 1.1);
+                        aiLog = 'AI punch vs special!'; } else { aiDmg = Math.floor(aiAtk * 0.8 + 2);
+                        aiLog = 'AI punch!'; }
+                } else if (aKick) {
+                    if (pBlock) { aiDmg = Math.floor(aiAtk * 0.5);
+                        aiLog = 'AI kick blocked!'; } else if (pPunch) { aiDmg = Math.floor(aiAtk * 1.2);
+                        aiLog = 'AI kick beat punch!'; } else { aiDmg = Math.floor(aiAtk * 0.9 + 3);
+                        aiLog = 'AI kick!'; }
+                } else if (aSpecialUsed) {
+                    if (pBlock) { aiDmg = Math.floor(aiSpecial * 0.4);
+                        aiLog = 'AI special deflected!'; } else { aiDmg = Math.floor(aiSpecial * 0.8 + 4);
+                        aiLog = '⭐ AI SPECIAL!'; }
+                } else if (aBlock) {
+                    aiLog = 'AI blocks.';
+                }
+
+                // if both block, tiny damage
+                if (pBlock && aBlock) {
+                    pDmg = 1;
+                    aiDmg = 1;
+                    pLog = 'Both block...';
+                    aiLog = '';
+                }
+
+                return {
+                    playerDamage: aiDmg,
+                    aiDamage: pDmg,
+                    playerLog: pLog + (aiLog ? ' | ' + aiLog : '')
+                };
+            }
+
+            // ─── END FIGHT ──────────────────────────────────────────────
+            function endFight() {
+                if (gameOver) return;
+                gameOver = true;
+                battleActive = false;
+                enableActions(false);
+
+                const playerWon = playerHealth > 0;
+                let reward = 0;
+                if (playerWon) {
+                    // win: double bet + bonus 5
+                    reward = betAmount * 2 + 5;
+                    coins += reward;
+                    setLog(`🏆 You win! +${reward} coins!`, '🎉');
+                } else {
+                    // lose: lose bet
+                    coins = Math.max(0, coins - betAmount);
+                    setLog(`💀 You lose! -${betAmount} coins.`, '😢');
+                }
+                updateCoinUI();
+                drawBattle();
+
+                // if coins <= 0, auto reset game
+                if (coins <= 0) {
+                    setTimeout(() => {
+                        setLog('💸 You ran out of coins! Full reset.', '🔄');
+                        fullReset();
+                    }, 1200);
+                }
+            }
+
+            // ─── FULL RESET ──────────────────────────────────────────────
+            function fullReset() {
+                coins = 100;
+                selectedFighter = 0;
+                betAmount = 10;
+                betSlider.value = 10;
+                betAmountSpan.textContent = '10';
+                updateCoinUI();
+                renderFighterCards();
+                resetFight();
+                setLog('Game reset! Pick your fighter.', '🔄');
+            }
+
+            // ─── EVENT BINDING ──────────────────────────────────────────
+            function init() {
+                renderFighterCards();
+                resetFight();
+                updateCoinUI();
+
+                // bet slider
+                betSlider.addEventListener('input', function() {
+                    const val = parseInt(this.value);
+                    betAmount = val;
+                    betAmountSpan.textContent = val;
+                });
+
+                betMaxBtn.addEventListener('click', function() {
+                    const maxBet = Math.min(coins, 50);
+                    betSlider.value = maxBet;
+                    betAmount = maxBet;
+                    betAmountSpan.textContent = maxBet;
+                });
+
+                // action buttons
+                actionBtns.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const action = this.dataset.action;
+                        if (!battleActive && !gameOver) {
+                            // start fight on first action
+                            if (coins < betAmount) {
+                                setLog('❌ Not enough coins!', '😅');
+                                return;
+                            }
+                            startFight();
+                            // then perform action after a tiny delay (to let UI update)
+                            setTimeout(() => {
+                                if (battleActive) playerAction(action);
+                            }, 100);
+                        } else {
+                            playerAction(action);
+                        }
+                    });
+                });
+
+                // reset fight
+                resetFightBtn.addEventListener('click', function() {
+                    if (battleActive && !gameOver) {
+                        if (!confirm('Reset fight? You will lose your bet.')) return;
+                        // lose bet
+                        coins = Math.max(0, coins - betAmount);
+                        updateCoinUI();
+                        setLog(`Fight reset. -${betAmount} coins.`, '🔄');
+                    }
+                    resetFight();
+                    if (coins <= 0) {
+                        fullReset();
+                    }
+                    updateCoinUI();
+                });
+
+                resetGameBtn.addEventListener('click', function() {
+                    if (confirm('Reset everything? (coins, fighters, fight)')) {
+                        fullReset();
+                    }
+                });
+
+                // keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === '1') document.querySelector('[data-action="punch"]')?.click();
+                    if (e.key === '2') document.querySelector('[data-action="kick"]')?.click();
+                    if (e.key === '3') document.querySelector('[data-action="block"]')?.click();
+                    if (e.key === '4') document.querySelector('[data-action="special"]')?.click();
+                    if (e.key === 'r' || e.key === 'R') resetFightBtn.click();
+                });
+
+                // resize canvas
+                function resizeCanvas() {
+                    const rect = canvas.getBoundingClientRect();
+                    // keep aspect ratio, but we set fixed size in css
+                }
+                window.addEventListener('resize', resizeCanvas);
+                resizeCanvas();
+
+                // initial draw
+                drawBattle();
+            }
+
+            // ─── START ──────────────────────────────────────────────────
+            init();
+        })();
+    </script>
+</body>
+</html>
